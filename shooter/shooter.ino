@@ -1,13 +1,15 @@
 #include "TvGame.h"
 //#include "SegaDbus9.h"
 //#include "DigitialButtonsController.h"
-#include "AnalogButtonsController.h"
+//#include "AnalogButtonsController.h"
+#include "AnalogStickController.h"
 
 byte gamestate = 0;
 TvGame game;
 //SegaDbus9 controller;
 //DigitalButtonsController controller;
-AnalogButtonsController controller;
+//AnalogButtonsController controller;
+AnalogStickController controller;
 int8_t posX = 0;
 int8_t posY = 0;
 int8_t sizeX = 4;
@@ -19,7 +21,8 @@ void setup() {
     game.begin();
     //controller = SegaDbus9();
     //controller = DigitalButtonsController();
-    controller = AnalogButtonsController();
+    //controller = AnalogButtonsController();
+    controller = AnalogStickController();
     controller.begin();
     posX = game.width /2;
     posY = game.height /2;
@@ -44,5 +47,7 @@ void loop() {
     game.fillRect(posX, posY, sizeX, sizeY, WHITE);
     game.drawCenteredText(0, String(game.currentFps).c_str());
     game.drawCenteredText(10, String(controller.currentState).c_str());
+    game.drawCenteredText(20, String(controller.getRelativeX()).c_str());
+    game.drawCenteredText(30, String(controller.getRelativeY()).c_str());
 }
 

@@ -26,7 +26,10 @@ public:
     // Virtual methods which must be implemented by concrete classes
     virtual void begin();
     virtual word readControllerState();
+    virtual float getRelativeX();
+    virtual float getRelativeY();
 
+// Public properties
 public:
     word lastState = 0;
     word currentState = 0;

@@ -13,16 +13,6 @@
 #define PIN_CONTROLLER_SET A0
 #define PIN_CONTROLLER_RESET 2
 
-/*
-#define BUTTON_UP 2
-#define BUTTON_DOWN 4
-#define BUTTON_LEFT 8
-#define BUTTON_RIGHT 16
-#define BUTTON_A 32
-#define BUTTON_START 64
-#define BUTTON_HOME 128
-*/
-
 /**
  * @brief A simple interface for a controller consisting of a set of digital switches / buttons
  * 
