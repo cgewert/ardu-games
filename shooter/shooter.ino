@@ -1,11 +1,13 @@
-//#include "SegaDbus9.h"
 #include "TvGame.h"
-#include "DigitialButtonsController.h"
+//#include "SegaDbus9.h"
+//#include "DigitialButtonsController.h"
+#include "AnalogButtonsController.h"
 
 byte gamestate = 0;
 TvGame game;
 //SegaDbus9 controller;
-DigitalButtonController controller;
+//DigitalButtonsController controller;
+AnalogButtonsController controller;
 int8_t posX = 0;
 int8_t posY = 0;
 int8_t sizeX = 4;
@@ -16,7 +18,8 @@ void setup() {
     game = TvGame();
     game.begin();
     //controller = SegaDbus9();
-    controller = DigitalButtonController();
+    //controller = DigitalButtonsController();
+    controller = AnalogButtonsController();
     controller.begin();
     posX = game.width /2;
     posY = game.height /2;

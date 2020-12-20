@@ -1,10 +1,10 @@
 #include "DigitialButtonsController.h"
 
-DigitalButtonController::DigitalButtonController() {
+DigitalButtonsController::DigitalButtonsController() {
     // ...
 }
 
-void DigitalButtonController::begin() {
+void DigitalButtonsController::begin() {
     pinMode(PIN_CONTROLLER_UP, INPUT_PULLUP);
     pinMode(PIN_CONTROLLER_DOWN, INPUT_PULLUP);
     pinMode(PIN_CONTROLLER_LEFT, INPUT_PULLUP);
@@ -14,8 +14,8 @@ void DigitalButtonController::begin() {
     pinMode(PIN_CONTROLLER_RESET, INPUT_PULLUP);
 }
 
-word DigitalButtonController::readControllerState() {
-    word state = 0;
+word DigitalButtonsController::readControllerState() {
+    word state = BUTTON_NONE;
     state |= (digitalRead(PIN_CONTROLLER_UP) == LOW)? BUTTON_UP : 0;
     state |= (digitalRead(PIN_CONTROLLER_DOWN) == LOW) ? BUTTON_DOWN : 0;
     state |= (digitalRead(PIN_CONTROLLER_LEFT) == LOW) ? BUTTON_LEFT : 0;
