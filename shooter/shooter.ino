@@ -1,25 +1,11 @@
 #include "TvGame.h"
 #include "AnalogStickController.h"
+#include "Sprite.h"
 
 byte gamestate = 0;
 byte nextGamestate = 0;
 TvGame game;
 AnalogStickController controller;
-
-int8_t posX = 0;
-int8_t posY = 0;
-int8_t sizeX = 8;
-int8_t sizeY = 8;
-
-/**
- * Made with Marlin Bitmap Converter
- * https://marlinfw.org/tools/u8glib/converter.html
- *
- * This bitmap from the file 'title3.png'
- */
-#pragma once
-
-#define TTSFJQ_BMPWIDTH  128
 
 const unsigned char titleGfx[] PROGMEM = {
   128, 64,
@@ -169,13 +155,43 @@ const unsigned char spaceshipGfx[] PROGMEM = {
   B00110000  // ..##....
 };
 
+#define MAX_SHOTS 10
+
+int8_t posX = 0;
+int8_t posY = 0;
+int8_t sizeX = 8;
+int8_t sizeY = 8;
+Rect shots[MAX_SHOTS];
+uint8_t numberOfShots = 0;
+uint8_t startShot = 0;
+
 void setup() {
     game = TvGame();
     game.begin();
+    game.setFps(50);
     controller = AnalogStickController();
     controller.begin();
-    posX = game.width /2;
+}
+
+void newGame() {
     posY = game.height /2;
+    posX = 0;
+    numberOfShots = 0;
+    startShot = 0;
+}
+
+void newShot() {
+    if (numberOfShots < MAX_SHOTS) {
+        shots[(startShot +numberOfShots) % MAX_SHOTS] = Rect(posX + sizeX, posY + 4, 2, 1);
+        numberOfShots++;
+    }
+}
+
+void removeShot() {
+    //shots[startShot].x = 0;
+    startShot++;
+    numberOfShots--;
+    if (startShot >= MAX_SHOTS) startShot = 0;
 }
 
 void loop() {
@@ -189,13 +205,15 @@ void loop() {
             game.drawBitmap(0, 0, titleGfx);
             if (controller.justPressed(BUTTON_A)) {
                 game.tone(500, 10);
+                newGame();
                 nextGamestate = 1;
             }
             break;
 
         // Main game
         case 1:
-            game.clearScreen();
+            
+            // Spaceship control
             if (controller.pressed(BUTTON_UP)) {
                 if (posY > 0) posY--;
             } else if (controller.pressed(BUTTON_DOWN)) {
@@ -207,16 +225,39 @@ void loop() {
                 if (posX + sizeX < game.width) posX++;
             }
 
-            game.drawBitmap(posX, posY, spaceshipGfx);
+            // Already shot bullets
+            for (int i = 0; i < numberOfShots; i++) {
+                byte idx = (startShot +i) %MAX_SHOTS;
+                if (shots[idx].x +shots[idx].width < game.width) {
+                    shots[idx].x += 2;
+                } else {
+                    removeShot();
+                }
+            }
 
+            // Fire button
+            if (controller.justPressed(BUTTON_A)) {
+                newShot();
+            }
+
+            // Draw the game state
+            game.clearScreen();
             // Debug output
             //game.drawCenteredText(0, String(game.currentFps).c_str());
             //game.drawCenteredText(10, String(controller.currentState).c_str());
             //game.drawCenteredText(20, String(controller.getRelativeX()).c_str());
             //game.drawCenteredText(30, String(controller.getRelativeY()).c_str());
 
-            if (controller.justPressed(BUTTON_A)) {
-                nextGamestate = 2;
+            game.drawBitmap(posX, posY, spaceshipGfx);
+
+            // Draw already shot bullets
+            for (int i = 0; i < numberOfShots; i++) {
+                byte idx = (startShot +i) % MAX_SHOTS;
+                game.fillRect(
+                    shots[idx].x,
+                    shots[idx].y,
+                    2, 1
+                );
             }
             break;
 
