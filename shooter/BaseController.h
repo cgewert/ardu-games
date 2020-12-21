@@ -21,7 +21,11 @@ class BaseController {
 public:
     BaseController();
     void updateControllerState();
-    bool pressed(word button);
+    bool pressed(word buttons);
+    bool notPressed(word button);
+    bool anyPressed(word buttons);
+    bool justPressed(word button);
+    bool justReleased(word button);
 
     // Virtual methods which must be implemented by concrete classes
     virtual void begin();
