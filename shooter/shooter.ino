@@ -1,11 +1,31 @@
 #include "TvGame.h"
 #include "AnalogStickController.h"
-#include "Sprite.h"
 
-byte gamestate = 0;
-byte nextGamestate = 0;
-TvGame game;
-AnalogStickController controller;
+#define MAX_SHOTS 5
+#define MAX_BULLETS 1
+#define MAX_ENEMIES 20
+
+#define STATE_INACTIVE 0
+#define STATE_ACTIVE 1
+#define STATE_PENDING 2
+
+#define TYPE_FRIENDLY 0
+#define TYPE_ENEMY 1
+#define LEVEL_ENTRY_LENGTH 3
+
+struct Sprite {
+    Rect bounds = Rect(0, 0, 1, 1);
+    byte state = STATE_INACTIVE;
+    byte type = TYPE_ENEMY;
+    byte frame = 0;
+    const unsigned char* bitmap;
+};
+
+struct Bullet {
+    Rect bounds = Rect(0, 0, 1, 1);
+    uint8_t state = STATE_INACTIVE;
+    uint8_t type = TYPE_ENEMY;
+};
 
 const unsigned char titleGfx[] PROGMEM = {
   128, 64,
@@ -155,54 +175,169 @@ const unsigned char spaceshipGfx[] PROGMEM = {
   B00110000  // ..##....
 };
 
-#define MAX_SHOTS 10
+const unsigned char enemyGfx[] PROGMEM = {
+  8, 8,
+  B00011110,
+  B00100001,
+  B01000101,
+  B10000001,
+  B10111101,
+  B10000001,
+  B10011101,
+  B01111110
+};
 
-int8_t posX = 0;
-int8_t posY = 0;
-int8_t sizeX = 8;
-int8_t sizeY = 8;
-Rect shots[MAX_SHOTS];
-uint8_t numberOfShots = 0;
-uint8_t startShot = 0;
+const unsigned int level1[] PROGMEM = {
+    8,          // number of entries
+    60,         // Level time in seconds
+    
+    5, 1, 20,   // Spawn enemy type 1 in second 5 at y position 20
+    6, 1, 30,
+    7, 1, 40,
+    8, 1, 50,
+
+    15, 1, 10,
+    15, 1, 20,
+    15, 1, 30,
+    15, 1, 40
+};
+
+byte gamestate = 0;
+byte nextGamestate = 0;
+TvGame game;
+AnalogStickController controller;
+
+Sprite player;
+Sprite enemies[MAX_ENEMIES];
+Bullet shots[MAX_SHOTS];
+//Bullet bullets[MAX_BULLETS];
+
+const unsigned int* currentLevel;
+unsigned long levelStartTime = 0;
+unsigned long timeElapsed = 0;
+unsigned long levelMaxTime = 0;
+
+uint8_t levelCursor = 0;
+uint8_t levelEntries = 0;
+uint16_t playerScore = 0;
+uint8_t playerLives = 0;
 
 void setup() {
-    game = TvGame();
+    game = TvGame(128, 64);
     game.begin();
-    game.setFps(50);
+    game.setFps(20);
+    game.setFont(font4x6);
     controller = AnalogStickController();
     controller.begin();
-}
 
-void newGame() {
-    posY = game.height /2;
-    posX = 0;
-    numberOfShots = 0;
-    startShot = 0;
-}
+    player = Sprite();
+    player.type = TYPE_FRIENDLY;
+    player.state = STATE_ACTIVE;
+    player.bounds.x = 0;
+    player.bounds.y = 0;
+    player.bounds.width = 8;
+    player.bounds.height = 8;
 
-void newShot() {
-    if (numberOfShots < MAX_SHOTS) {
-        shots[(startShot +numberOfShots) % MAX_SHOTS] = Rect(posX + sizeX, posY + 4, 2, 1);
-        numberOfShots++;
+    for (byte i = 0; i < MAX_ENEMIES; i++) {
+        enemies[i] = Sprite();
+    }
+    for (byte i = 0; i < MAX_SHOTS; i++) {
+        shots[i] = Bullet();
     }
 }
 
-void removeShot() {
-    //shots[startShot].x = 0;
-    startShot++;
-    numberOfShots--;
-    if (startShot >= MAX_SHOTS) startShot = 0;
+void newGame() {
+    player.bounds.x = 0;
+    player.bounds.y = game.height /2;
+    playerScore = 0;
+    playerLives = 3;
+
+    for (byte i = 0; i < MAX_ENEMIES; i++) {
+        enemies[i].state = STATE_INACTIVE;
+    }
+    for (byte i = 0; i < MAX_SHOTS; i++) {
+        shots[i].state = STATE_INACTIVE;
+    }
+
+    levelStartTime = millis();
+    levelCursor = 0;
+
+    currentLevel = level1;
+    levelEntries = (uint8_t)pgm_read_byte(currentLevel);
+    levelMaxTime = (uint8_t)pgm_read_byte(currentLevel +1);
+}
+
+byte nextFreeEnemyIndex() {
+    for (byte i = 0; i < MAX_ENEMIES; i++) {
+        if (enemies[i].state == STATE_INACTIVE) return i;
+    }
+    return MAX_ENEMIES;
+}
+
+byte nextFreeShotIndex() {
+    for (byte i = 0; i < MAX_SHOTS; i++) {
+        if (shots[i].state == STATE_INACTIVE) return i;
+    }
+    return MAX_SHOTS;
+}
+
+void newShot() {
+    byte idx = nextFreeShotIndex();
+    if (idx < MAX_SHOTS) {
+        shots[idx] = Bullet();
+        shots[idx].state = STATE_ACTIVE;
+        shots[idx].type = TYPE_FRIENDLY;
+        shots[idx].bounds.x = player.bounds.x +player.bounds.width;
+        shots[idx].bounds.y = player.bounds.y +player.bounds.height /2;
+        shots[idx].bounds.width = 2;
+        shots[idx].bounds.height = 1;
+    }
+}
+
+void newEnemy(uint8_t enemyType = 0, float y = 0) {
+    int idx = nextFreeEnemyIndex();
+    if (idx < MAX_ENEMIES) {
+        enemies[idx] = Sprite();
+        enemies[idx].bounds = Rect(
+            game.width - 9,
+            y,
+            8, 8
+        );
+        enemies[idx].state = 1;
+        enemies[idx].type = TYPE_ENEMY;
+        enemies[idx].bitmap = enemyGfx;
+    }
+}
+
+void drawStatusText() {
+    game.setFont(font4x6);
+    game.setCursor(0, 0);
+    game.TV.print((int)levelCursor);
+    game.setCursor(25, 0);
+    game.TV.print(timeElapsed);
+    game.setCursor(45, 0);
+    game.TV.print(game.currentFps);
+
+    game.setCursor(70, 0);
+    game.TV.print((int)playerLives);
+
+    game.setCursor(85, 0);
+    game.TV.print(playerScore);
 }
 
 void loop() {
     if (!game.nextFrame()) return;
     controller.updateControllerState();
+    byte i = 0;
+    byte k = 0;
+    byte idx;
 
     switch (gamestate) {
 
         // Title screen
         case 0:
             game.drawBitmap(0, 0, titleGfx);
+            game.drawCenteredText(game.height -10, "Press button to start");
             if (controller.justPressed(BUTTON_A)) {
                 game.tone(500, 10);
                 newGame();
@@ -212,26 +347,57 @@ void loop() {
 
         // Main game
         case 1:
-            
-            // Spaceship control
-            if (controller.pressed(BUTTON_UP)) {
-                if (posY > 0) posY--;
-            } else if (controller.pressed(BUTTON_DOWN)) {
-                if (posY + sizeY < game.height) posY++;
-            }
-            if (controller.pressed(BUTTON_LEFT)) {
-                if (posX > 0) posX--;
-            } else if (controller.pressed(BUTTON_RIGHT)) {
-                if (posX + sizeX < game.width) posX++;
+            timeElapsed = (millis() -levelStartTime) /1000;
+
+            // Level end is depending on time elapsed
+            if (timeElapsed == levelMaxTime) {
+                nextGamestate = 2;
+                break;
             }
 
-            // Already shot bullets
-            for (int i = 0; i < numberOfShots; i++) {
-                byte idx = (startShot +i) %MAX_SHOTS;
-                if (shots[idx].x +shots[idx].width < game.width) {
-                    shots[idx].x += 2;
-                } else {
-                    removeShot();
+            // Spaceship control
+            if (abs(controller.getRelativeX()) > 0.05) {
+                player.bounds.x += controller.getRelativeX() *2;
+                if (player.bounds.x + player.bounds.width > game.width) player.bounds.x = game.width - player.bounds.width;
+                if (player.bounds.x < 0) player.bounds.x = 0;
+            }
+            if (abs(controller.getRelativeY()) > 0.05) {
+                player.bounds.y += controller.getRelativeY() * 2;
+                if (player.bounds.y + player.bounds.height > game.height) player.bounds.y = game.height - player.bounds.height;
+                if (player.bounds.y < 0) player.bounds.y = 0;
+            }
+
+            // Player bullets
+           for (i = 0; i < MAX_SHOTS; i++) {
+               if (shots[i].state != STATE_INACTIVE) {
+                   if (shots[i].bounds.x +shots[i].bounds.width < game.width) {
+                       shots[i].bounds.x += 1.5;
+                   } else {
+                       shots[i].state = STATE_INACTIVE;
+                   }
+               }
+           }
+
+            // Move enemies
+            for (i = 0; i < MAX_ENEMIES; i++) {
+                if (enemies[i].state != STATE_INACTIVE) {
+                    if (enemies[i].bounds.x > 0) {
+                        enemies[i].bounds.x--;
+                    } else {
+                        enemies[i].state = STATE_INACTIVE;
+                    }
+                }
+            }
+
+
+            // Add enemies according to level map
+            if (game.frameCount == 0) {
+                while (levelCursor < levelEntries && (int)pgm_read_byte_near(currentLevel + 2 + (levelCursor * LEVEL_ENTRY_LENGTH)) == timeElapsed) {
+                    newEnemy(
+                        (int)pgm_read_byte_near(currentLevel + 3 + (levelCursor * LEVEL_ENTRY_LENGTH)),
+                        (int)pgm_read_byte_near(currentLevel + 4 + (levelCursor * LEVEL_ENTRY_LENGTH))
+                    );
+                    levelCursor++;
                 }
             }
 
@@ -240,25 +406,64 @@ void loop() {
                 newShot();
             }
 
+            // Collision detection
+            for (i = 0; i < MAX_ENEMIES; i++) {
+                if (enemies[i].state != STATE_INACTIVE) {
+                    for (k = 0; k < MAX_SHOTS; k++) {
+                        if (shots[k].state != STATE_INACTIVE) {
+                            if (game.collide(enemies[i].bounds, shots[k].bounds)) {
+                                shots[k].state = STATE_INACTIVE;
+                                enemies[i].state = STATE_INACTIVE;
+                                // TODO Ton ausgeben
+                                // TODO Score hochzählen
+                                playerScore += 10;
+                            }
+                        }
+                    }
+                }
+
+                if (enemies[i].state != STATE_INACTIVE) {
+                    if (game.collide(enemies[i].bounds, player.bounds)) {
+                        if (playerLives > 0) {
+                            enemies[i].state = STATE_INACTIVE;
+                            playerLives--;
+                        } else {
+                            nextGamestate = 2;
+                        }
+                    }
+                }
+            }
+
             // Draw the game state
             game.clearScreen();
-            // Debug output
-            //game.drawCenteredText(0, String(game.currentFps).c_str());
-            //game.drawCenteredText(10, String(controller.currentState).c_str());
-            //game.drawCenteredText(20, String(controller.getRelativeX()).c_str());
-            //game.drawCenteredText(30, String(controller.getRelativeY()).c_str());
+            game.drawBitmap(player.bounds.x, player.bounds.y, spaceshipGfx);
 
-            game.drawBitmap(posX, posY, spaceshipGfx);
-
-            // Draw already shot bullets
-            for (int i = 0; i < numberOfShots; i++) {
-                byte idx = (startShot +i) % MAX_SHOTS;
-                game.fillRect(
-                    shots[idx].x,
-                    shots[idx].y,
-                    2, 1
-                );
+            // Player shots
+            for (i = 0; i < MAX_SHOTS; i++) {
+                if (shots[i].state != STATE_INACTIVE) {
+                    game.fillRect(
+                        shots[i].bounds.x,
+                        shots[i].bounds.y,
+                        shots[i].bounds.width,
+                        shots[i].bounds.height
+                    );
+                }
             }
+
+            // Enemies
+            for (i = 0; i < MAX_ENEMIES; i++) {
+                if (enemies[i].state != STATE_INACTIVE) {
+                    game.drawBitmap(
+                        enemies[i].bounds.x,
+                        enemies[i].bounds.y,
+                        enemies[i].bitmap
+                    );
+                }
+            }
+
+            // TODO Enemy bullets
+
+            drawStatusText();
             break;
 
         // Game over screen

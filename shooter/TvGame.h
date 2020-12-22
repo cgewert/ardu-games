@@ -22,8 +22,8 @@
  * given width and height.
  */
 struct Rect {
-    int8_t x;      /**< The X coordinate of the top left corner */
-    int8_t y;      /**< The Y coordinate of the top left corner */
+    float x;      /**< The X coordinate of the top left corner */
+    float y;      /**< The Y coordinate of the top left corner */
     uint8_t width;  /**< The width of the rectangle */
     uint8_t height; /**< The height of the rectangle */
 
@@ -40,7 +40,7 @@ struct Rect {
      * @param width The width of the rectangle. Copied to variable `width`.
      * @param height The height of the rectangle. Copied to variable `height`.
      */
-    constexpr Rect(int8_t x, int8_t y, uint8_t width, uint8_t height)
+    constexpr Rect(float x, float y, uint8_t width, uint8_t height)
         : x(x), y(y), width(width), height(height)   {  }
 };
 
@@ -50,8 +50,8 @@ struct Rect {
  * The location of the point is given by X and Y coordinates.
  */
 struct Point {
-    int8_t x; /**< The X coordinate of the point */
-    int8_t y; /**< The Y coordinate of the point */
+    float x; /**< The X coordinate of the point */
+    float y; /**< The Y coordinate of the point */
 
     /**
      * @brief The default constructor
@@ -64,13 +64,15 @@ struct Point {
      * @param x The X coordinate of the point. Copied to variable `x`.
      * @param y The Y coordinate of the point. Copied to variable `y`.
      */
-    constexpr Point(int8_t x, int8_t y)
+    constexpr Point(float x, float y)
         : x(x), y(y)   {  }
 };
 
 class TvGame {
 public:
     TvGame();
+    TvGame(uint8_t width, uint8_t height);
+
     void begin();
 
     /**
@@ -139,13 +141,13 @@ public:
     static bool collide(Rect rect1, Rect rect2);
     
 public:
+    TVout TV;
     uint8_t width = 128;
     uint8_t height = 96;
     uint8_t frameCount;
     float currentFps;
 
 private:
-    TVout TV;    
     uint8_t fontWidth = 6;
     uint8_t fontHeight = 8;
     uint8_t fps = 20;
