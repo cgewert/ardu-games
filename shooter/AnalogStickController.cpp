@@ -17,8 +17,8 @@ word AnalogStickController::readControllerState() {
     state |= (currentSwitch == LOW)? BUTTON_A : 0;
     state |= (getRelativeX() >= 0.2)? BUTTON_RIGHT : 0;
     state |= (getRelativeX() <= -0.2)? BUTTON_LEFT : 0;
-    state |= (getRelativeY() >= 0.2)? BUTTON_UP : 0;
-    state |= (getRelativeY() <= -0.2)? BUTTON_DOWN : 0;
+    state |= (getRelativeY() >= 0.2)? BUTTON_DOWN : 0;
+    state |= (getRelativeY() <= -0.2)? BUTTON_UP : 0;
 
     return state;
 }
@@ -36,5 +36,5 @@ float AnalogStickController::getRelativeX() {
 }
 
 float AnalogStickController::getRelativeY() {
-    return (512 - currentY) /512.0;
+    return -(512 - currentY) /512.0;
 }

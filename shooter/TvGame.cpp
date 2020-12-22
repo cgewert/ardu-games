@@ -1,8 +1,12 @@
 #include "TvGame.h"
 
-TvGame::TvGame() {
-    // TODO Not implemented yet
+TvGame::TvGame(uint8_t width, uint8_t height) {
+    this->width = width;
+    this->height = height;
 }
+
+TvGame::TvGame() : TvGame(128, 96) {
+};
 
 #pragma region Basic control
 
@@ -11,6 +15,7 @@ void TvGame::begin() {
     TV.begin(NTSC, width, height);
     setFont(font6x8);
     frameCounterTime = millis();
+    lastFrameMillis = frameCounterTime;
     currentFps = fps;
 }
 
