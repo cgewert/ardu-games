@@ -8,7 +8,7 @@
 
 #define MAX_SHOTS 5
 #define MAX_BULLETS 5
-#define MAX_ENEMIES 15
+#define MAX_ENEMIES 16
 #define MAX_LEVEL 2
 
 #define STATE_INACTIVE 0
@@ -31,7 +31,6 @@ struct Sprite {
     byte type = TYPE_ENEMY;
     byte frame = 0;
     byte hitPoints = 1;
-//    byte score = 10;
     byte ttl = 0;
     byte id = 0;
     const unsigned char* bitmap1;
@@ -39,10 +38,9 @@ struct Sprite {
 };
 
 struct Bullet {
-    Rect bounds = Rect(0, 0, 1, 1);
+    Point position = Point(0, 0);
     Point speed = Point(0, 0);
     uint8_t state = STATE_INACTIVE;
-//    uint8_t type = TYPE_ENEMY;
 };
 
 byte gamestate = 0;
@@ -167,10 +165,8 @@ void newBullet(float startX, float startY, float speedX = -2, float speedY = 0) 
     if (idx < MAX_BULLETS) {
         bullets[idx] = Bullet();
         bullets[idx].state = STATE_ACTIVE;
-        bullets[idx].bounds.x = startX;
-        bullets[idx].bounds.y = startY;
-        bullets[idx].bounds.width = 1;
-        bullets[idx].bounds.height = 1;
+        bullets[idx].position.x = startX;
+        bullets[idx].position.y = startY;
         bullets[idx].speed.x = speedX;
         bullets[idx].speed.y = speedY;
         soundEnemyShoot();
@@ -182,10 +178,8 @@ void newShot() {
     if (idx < MAX_SHOTS) {
         shots[idx] = Bullet();
         shots[idx].state = STATE_ACTIVE;
-        shots[idx].bounds.x = player.bounds.x +player.bounds.width;
-        shots[idx].bounds.y = player.bounds.y +player.bounds.height /2;
-        shots[idx].bounds.width = 2;
-        shots[idx].bounds.height = 1;
+        shots[idx].position.x = player.bounds.x +player.bounds.width;
+        shots[idx].position.y = player.bounds.y +player.bounds.height /2;
         shots[idx].speed = Point(2, 0);
         soundPlayerShoot();
     }
@@ -302,9 +296,9 @@ void loop() {
             // Player bullets
             for (i = 0; i < MAX_SHOTS; i++) {
                 if (shots[i].state != STATE_INACTIVE) {
-                    if (shots[i].bounds.x +shots[i].bounds.width < game.width) {
-                        shots[i].bounds.x += shots[i].speed.x;
-                        shots[i].bounds.y += shots[i].speed.y;
+                    if (shots[i].position.x +1 < game.width) {
+                        shots[i].position.x += shots[i].speed.x;
+                        shots[i].position.y += shots[i].speed.y;
                     } else {
                         shots[i].state = STATE_INACTIVE;
                     }
@@ -314,12 +308,12 @@ void loop() {
             // Enemy bullets
             for (i = 0; i < MAX_BULLETS; i++) {
                 if (bullets[i].state != STATE_INACTIVE) {
-                    if (bullets[i].bounds.x + bullets[i].bounds.width < game.width
-                        && bullets[i].bounds.y + bullets[i].bounds.height < game.height
-                        && bullets[i].bounds.x > 0
-                        && bullets[i].bounds.y > 0) {
-                        bullets[i].bounds.x += bullets[i].speed.x;
-                        bullets[i].bounds.y += bullets[i].speed.y;
+                    if (bullets[i].position.x + 1 < game.width
+                        && bullets[i].position.y + 1 < game.height
+                        && bullets[i].position.x > 0
+                        && bullets[i].position.y > 0) {
+                        bullets[i].position.x += bullets[i].speed.x;
+                        bullets[i].position.y += bullets[i].speed.y;
                     } else {
                         bullets[i].state = STATE_INACTIVE;
                     }
@@ -398,7 +392,7 @@ void loop() {
                 if (enemies[i].state != STATE_INACTIVE && enemies[i].type != TYPE_FRIENDLY) {
                     for (k = 0; k < MAX_SHOTS; k++) {
                         if (shots[k].state != STATE_INACTIVE) {
-                            if (game.collide(enemies[i].bounds, shots[k].bounds)) {
+                            if (game.collide(shots[k].position, enemies[i].bounds)) {
                                 
                                 shots[k].state = STATE_INACTIVE;
                                 enemies[i].hitPoints--;
@@ -436,7 +430,7 @@ void loop() {
             // Check if player is hit by enemy bullets
             for (i = 0; i < MAX_BULLETS; i++) {
                 if (bullets[i].state != STATE_INACTIVE) {
-                    if (game.collide(bullets[i].bounds, player.bounds)) {
+                    if (game.collide(bullets[i].position, player.bounds)) {
                         bullets[i].state = STATE_INACTIVE;
                         playerHit();
                     }
@@ -449,12 +443,7 @@ void loop() {
             // Player shots
             for (i = 0; i < MAX_SHOTS; i++) {
                 if (shots[i].state != STATE_INACTIVE) {
-                    game.fillRect(
-                        shots[i].bounds.x,
-                        shots[i].bounds.y,
-                        shots[i].bounds.width,
-                        shots[i].bounds.height
-                    );
+                    game.drawPixel(shots[i].position.x, shots[i].position.y);
                 }
             }
 
@@ -472,12 +461,7 @@ void loop() {
             // Enemy bullets
             for (i = 0; i < MAX_BULLETS; i++) {
                 if (bullets[i].state != STATE_INACTIVE) {
-                    game.fillRect(
-                        bullets[i].bounds.x,
-                        bullets[i].bounds.y,
-                        bullets[i].bounds.width,
-                        bullets[i].bounds.height
-                    );
+                    game.drawPixel(bullets[i].position.x, bullets[i].position.y);
                 }
             }
 
