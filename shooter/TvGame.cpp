@@ -4,6 +4,8 @@ TvGame::TvGame() {
     // TODO Not implemented yet
 }
 
+#pragma region Basic control
+
 void TvGame::begin() {
     randomSeed(analogRead(0));
     TV.begin(NTSC, width, height);
@@ -35,12 +37,34 @@ bool TvGame::nextFrame() {
     return false;
 }
 
-void TvGame::clearScreen() {
-    TV.clear_screen();
+bool TvGame::everyXFrames(uint8_t frames) {
+    return frameCount % frames == 0;
 }
 
 void TvGame::delay(unsigned int ms) {
     TV.delay(ms);
+}
+
+#pragma endregion
+
+
+#pragma region Audio
+
+void TvGame::tone(unsigned int frequency, unsigned long duration_ms) {
+    TV.tone(frequency, duration_ms);
+}
+
+void TvGame::noTone() {
+    TV.noTone();
+}
+
+#pragma endregion
+
+
+#pragma region Graphics
+
+void TvGame::clearScreen() {
+    TV.clear_screen();
 }
 
 void TvGame::setFont(const unsigned char* f) {
@@ -71,14 +95,45 @@ void TvGame::shiftScreen(uint8_t distance, uint8_t direction) {
     TV.shift(distance, direction);
 }
 
-void TvGame::drawPixel(uint8_t x, uint8_t y, uint8_t color) {
+void TvGame::drawPixel(int8_t x, int8_t y, uint8_t color = WHITE) {
     TV.set_pixel(x, y, color);
 }
 
-void TvGame::drawRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color = WHITE) {
+void TvGame::drawRect(int8_t x, int8_t y, uint8_t width, uint8_t height, uint8_t color = WHITE) {
     TV.draw_rect(x, y, width - 1, height - 1, color);
 }
 
-void TvGame::fillRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color = WHITE, uint8_t fillColor = WHITE) {
+void TvGame::fillRect(int8_t x, int8_t y, uint8_t width, uint8_t height, uint8_t color = WHITE, uint8_t fillColor = WHITE) {
     TV.draw_rect(x, y, width - 1, height - 1, color, fillColor);
 }
+
+void TvGame::drawCircle(int8_t x0, int8_t y0, uint8_t r, uint8_t color = WHITE) {
+    TV.draw_circle(x0, y0, r, color);
+}
+
+void TvGame::fillCircle(int8_t x0, int8_t y0, uint8_t r, uint8_t color = WHITE, uint8_t fillColor = WHITE) {
+    TV.draw_circle(x0, y0, r, color, fillColor);
+}
+
+void TvGame::drawBitmap(int8_t x, int8_t y, const uint8_t* bitmap, uint8_t width = 0, uint8_t height = 0) {
+    TV.bitmap(x, y, bitmap, 0, width, height);
+}
+
+#pragma endregion
+
+
+#pragma region Collision detection
+
+bool TvGame::collide(Point point, Rect rect) {
+    return ((point.x >= rect.x) && (point.x < rect.x + rect.width) &&
+        (point.y >= rect.y) && (point.y < rect.y + rect.height));
+}
+
+bool TvGame::collide(Rect rect1, Rect rect2) {
+    return !(rect2.x >= rect1.x + rect1.width ||
+        rect2.x + rect2.width <= rect1.x ||
+        rect2.y >= rect1.y + rect1.height ||
+        rect2.y + rect2.height <= rect1.y);
+}
+
+#pragma endregion

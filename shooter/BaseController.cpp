@@ -11,8 +11,24 @@ void BaseController::updateControllerState() {
     currentState = readControllerState();
 }
 
-bool BaseController::pressed(word button) {
-    return (currentState & button) == button; 
+bool BaseController::pressed(word buttons) {
+    return (currentState & buttons) == buttons;
+}
+
+bool BaseController::notPressed(word buttons) {
+    return (currentState & buttons) == 0;
+}
+
+bool BaseController::anyPressed(word buttons = 0) {
+    return (currentState & buttons) != 0;
+}
+
+bool BaseController::justPressed(word button) {
+    return (!(lastState & button) && (currentState & button));
+}
+
+bool BaseController::justReleased(word button) {
+    return ((lastState & button) && !(currentState & button));
 }
 
 float BaseController::getRelativeX() {
