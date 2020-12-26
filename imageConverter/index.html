@@ -12,11 +12,18 @@
           <h2>Select or drag and drop an image</h2>
           <div class="controls-wrapper">
             <div id="dragArea"></div>
-            <img id="btnUpload" src="upload.svg" alt="Upload an image" width="32" height="32">
           </div>
         </div>
         <div class="meta-data">
-
+          <div class="left-column">
+            <span id="imageName"></span>
+            <img src="" alt="Loaded Image" id="loadedImage">
+          </div>
+          <div class="right-column">
+            <div id="imageSize"></div>
+            <div id="imageDimension"></div>
+            <div id="aspect"></div>
+          </div>
         </div>
       </div>
       <script>

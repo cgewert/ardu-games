@@ -180,7 +180,13 @@
 
 class ImageConverter {
     private $btnInput = document.createElement('input');
-    private $btnUpload = document.getElementById('btnUpload');
+    private $dragArea = document.getElementById('dragArea');
+    private $loadedImage = <HTMLImageElement>document.getElementById('loadedImage');
+    private $imageName = document.getElementById('imageName');
+    private $imageSize = document.getElementById('imageSize');
+    private $imageDimension = document.getElementById('imageDimension');
+    private $imageAspectRatio = document.getElementById('aspect');
+    private fileReader = new FileReader();
 
     constructor() {
         this.init();
@@ -188,15 +194,25 @@ class ImageConverter {
 
     private init(){
         this.$btnInput.type = 'file';
+        this.$btnInput.multiple = true;
 
         // Register event handlers
-        this.$btnUpload.addEventListener('click', () => {
+        this.$dragArea.addEventListener('click', () => {
             this.onClickUpload();
         });
 
         this.$btnInput.onchange = event => {
             this.onFileSelection();
         };
+
+        this.$loadedImage.onload = () => {
+            this.refresh();
+        };
+
+        this.fileReader.onload = () => {
+            // We use filereader readAsDataURL, so result is a string
+            this.$loadedImage.src = <string>this.fileReader.result;
+        }
     }
 
     private onClickUpload() {
@@ -205,23 +221,23 @@ class ImageConverter {
 
     private onFileSelection() {
         const files = this.$btnInput.files;
-        console.log(files);
-        /*if (!files.length) {
-            return;
-        }*/
+        const selectedFile = files[0] ? files[0] : false;
         
-        //let selectedFile = files[0];
-        
-        /*if (!selectedFile.type.match('image.*')) {
+        if (!selectedFile || !selectedFile.type.match('image.*')) {
+            console.log('No file or none image file selected!');
+
             return;
         }
-        
-        let reader = new FileReader();
-        reader.onload = () => {
-            this.tempImg = document.createElement("img");
-            this.tempImg.onload = () => {
-                this.doIt();
-            };
-            this.tempImg.src = reader.result;*/
+
+        this.fileReader.readAsDataURL(selectedFile);
+    }
+
+    private refresh() {
+        this.$loadedImage.style.display = 'block';
+        const file = this.$btnInput.files[0];
+        this.$imageName.innerText = file.name;
+        this.$imageSize.innerText = `Filesize: ${file.size} Bytes`;
+        this.$imageDimension.innerText = `Width: ${this.$loadedImage.naturalWidth}px / Height: ${this.$loadedImage.naturalHeight}px`;
+        this.$imageAspectRatio.innerText = `Aspect Ratio: ${(this.$loadedImage.naturalWidth / this.$loadedImage.naturalHeight).toFixed(2)}`;
     }
 }

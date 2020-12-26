@@ -14,7 +14,7 @@ h1{
 
 h2{
   padding: 0;
-  margin: 10px 0;
+  margin: 0 0 10px 0;
 }
 
 .input-wrapper{
@@ -34,25 +34,58 @@ h2{
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin: 20px 0 0 0;
 
     #dragArea{
       width: 100%;
       height: 250px;
-      background-color: #bbbbbb;
-      border: black dashed 1px;
+      background-color:rgb(121, 133, 131);
+      border: black dashed 3px;
       border-radius: 5px;
+      background-image: url('../upload.svg');
+      background-repeat: no-repeat;
+      background-size: 100px;
+      background-position: center;
     }
 
     #dragArea:hover{
-      background-color: #aaaaaa;
+      background-color: rgb(221, 233, 231);
+      cursor: pointer;
+    }
+  }
+
+  .meta-data{
+    display: flex;
+    flex-direction: row;
+    
+    .left-column{
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      #loadedImage{
+        display: none;
+        height: 256px;
+        width: 256px;
+      }
+
+      #imageName{
+        margin-bottom: 10px;
+        font-size: 20px;
+      }
     }
 
-    #btnUpload{
-      margin: 10px 0;
+    .right-column{
+      flex: 1;
+      font-size: 20px;
+      display: flex;
+      flex-direction: column;
+      padding: 5px;
+      
+      div{
+        padding: 5px;
+      }
     }
-
-    #btnUpload:hover{
-      fill: cornflowerblue;
-    }
+    
   }
 }
