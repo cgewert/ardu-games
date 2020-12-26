@@ -6,49 +6,21 @@
         <script src="js/imageConverter.js"></script>
     </head>
     <body>
-        <div class="content-wrapper">
-          <h1>
-            Image Converter for Arduino Bitmaps
-          </h1>
-          <div class="image-selector">
-            <div>Select an image:</div>
-            <input type="file" id="btnImageSelect"/>
-          </div>
-          <div class="options-wrapper">
-            <h2>Options</h2>
-            <div class="section-mode">
-              <h3>Mode</h3>
-              <label for="btn1Bit">1 Bit</label>
-              <input type="radio" name="mode-1-bit" id="btn1Bit" checked/>
-            </div>
-            <div class="section-invert">
-              <h3>Invert</h3>
-              <label for="btnInvertNo">No</label>
-              <input type="radio" name="invert" id="btnInvertNo" checked/>
-              <label for="btnInvertYes">Yes</label>
-              <input type="radio" name="invert" id="btnInvertYes"/>
-            </div>        
-          </div>
-          <div class="preview-wrapper">
-            <div class="section-preview">
-              <h3>Size</h3>
-              <div>
-                <strong>Width:</strong><span id="imagewidth"> - px</span>
-                <strong>Height:</strong><span id="imageheight"> - px</span>
-              </div>
-              <h3>Preview:</h3>
-              <div>
-                <canvas id="screen" width="128" height="64" ></canvas>
-              </div>
-            </div>
-          </div>
-          <div class="output-wrapper">
-            <h3>Code:</h3>
-            <textarea id="code"></textarea>
+      <h1>Image converter for Arduino Bitmaps</h1>
+      <div class="input-wrapper">
+        <div class="input-area">
+          <h2>Select or drag and drop an image</h2>
+          <div class="controls-wrapper">
+            <div id="dragArea"></div>
+            <img id="btnUpload" src="upload.svg" alt="Upload an image" width="32" height="32">
           </div>
         </div>
-        <script>
-          let imageConverter = new ImageConverter();
-        </script>
+        <div class="meta-data">
+
+        </div>
+      </div>
+      <script>
+      let imageConverter = new ImageConverter();
+      </script>
     </body>
 </html>
