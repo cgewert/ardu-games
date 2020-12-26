@@ -1,0 +1,17 @@
+{
+  "name": "imageconverter",
+  "version": "1.0.0",
+  "description": "A small tool to convert different image formats to arduino style bitmaps",
+  "private": true,
+  "scripts": {
+    "prebuild": "node prebuild.js",
+    "build": "node-sass scss --output dist/css && tsc --outDir dist/js",
+    "postbuild": "node postbuild.js"
+  },
+  "author": "cgewert@gmail.com",
+  "license": "GPL-2.0",
+  "devDependencies": {
+    "node-sass": "^5.0.0",
+    "typescript": "^4.1.3"
+  }
+}
