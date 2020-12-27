@@ -1,10 +1,3 @@
-/*Node.prototype.on = function(eventsStr, callback) {
-    var eventNames = eventsStr.split(/\s+/);
-    for (var i=0; i<eventNames.length; i++) {
-        this.addEventListener(eventNames[i], callback);
-    }
-  };*/
-  
   /*class ImageConverter {
     $code = document.getElementById('code');
     $screen = document.getElementById('screen');
@@ -182,10 +175,13 @@ class ImageConverter {
     private $btnInput = document.createElement('input');
     private $dragArea = document.getElementById('dragArea');
     private $loadedImage = <HTMLImageElement>document.getElementById('loadedImage');
+    private tempCanvas = document.createElement('canvas');
     private $imageName = document.getElementById('imageName');
     private $imageSize = document.getElementById('imageSize');
     private $imageDimension = document.getElementById('imageDimension');
     private $imageAspectRatio = document.getElementById('aspect');
+    private $fileType = document.getElementById('fileType');
+    private $code = document.getElementById('code');
     private fileReader = new FileReader();
 
     constructor() {
@@ -237,7 +233,16 @@ class ImageConverter {
         const file = this.$btnInput.files[0];
         this.$imageName.innerText = file.name;
         this.$imageSize.innerText = `Filesize: ${file.size} Bytes`;
+        const imageDimension = {
+            x: this.$loadedImage.naturalWidth,
+            y: this.$loadedImage.naturalHeight
+        }
         this.$imageDimension.innerText = `Width: ${this.$loadedImage.naturalWidth}px / Height: ${this.$loadedImage.naturalHeight}px`;
-        this.$imageAspectRatio.innerText = `Aspect Ratio: ${(this.$loadedImage.naturalWidth / this.$loadedImage.naturalHeight).toFixed(2)}`;
+        this.$imageAspectRatio.innerText = `Aspect Ratio: ${(imageDimension.x / imageDimension.y).toFixed(2)}`;
+        this.$fileType.innerText = `File type: ${file.type}`;
+        const tempContext = this.tempCanvas.getContext('2d');
+        tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+        tempContext.drawImage(this.$loadedImage, 0, 0);
+        console.log(tempContext.getImageData(0, 0, imageDimension.x, imageDimension.y));
     }
 }

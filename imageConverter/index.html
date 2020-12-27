@@ -16,15 +16,21 @@
         </div>
         <div class="meta-data">
           <div class="left-column">
-            <span id="imageName"></span>
+            <span id="imageName">Select an image first</span>
             <img src="" alt="Loaded Image" id="loadedImage">
           </div>
           <div class="right-column">
-            <div id="imageSize"></div>
-            <div id="imageDimension"></div>
-            <div id="aspect"></div>
+            <div id="fileType">File type: /</div>
+            <div id="imageSize">/ Bytes</div>
+            <div id="imageDimension">/</div>
+            <div id="aspect">/</div>
           </div>
         </div>
+      </div>
+      <div class="settings-wrapper"></div>
+      <div class="output-wrapper">
+        <div id="code">&nbsp;</div>
+        <canvas id="previewImage"></canvas>
       </div>
       <script>
       let imageConverter = new ImageConverter();
