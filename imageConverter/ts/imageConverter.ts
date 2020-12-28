@@ -191,8 +191,13 @@ interface ConverterSettings {
 }
 
 class ImageConverter {
+    public dropHandler: Function;
+    public dragHandler: Function;
+    public dragLeaveHandler: Function;
+
     private $btnInput = document.createElement('input');
-    private $dragArea = document.getElementById('dragArea');
+    private $btnInverting = <HTMLInputElement>document.getElementById('btnInverting');
+    private $dropArea = document.getElementById('dropArea');
     private $loadedImage = <HTMLImageElement>document.getElementById('loadedImage');
     private tempCanvas = document.createElement('canvas');
     private $imageName = document.getElementById('imageName');
@@ -203,6 +208,7 @@ class ImageConverter {
     private $code = document.getElementById('code');
     private $preview = <HTMLCanvasElement>document.getElementById('previewImage');
     private fileReader = new FileReader();
+    private file: File;
 
     constructor() {
         this.init();
@@ -213,12 +219,16 @@ class ImageConverter {
         this.$btnInput.multiple = true;
 
         // Register event handlers
-        this.$dragArea.addEventListener('click', () => {
+        this.$dropArea.addEventListener('click', () => {
             this.onClickUpload();
         });
 
-        this.$btnInput.onchange = event => {
+        this.$btnInput.onchange = () => {
             this.onFileSelection();
+        };
+
+        this.$btnInverting.onchange = () => {
+            this.refresh();
         };
 
         this.$loadedImage.onload = () => {
@@ -229,6 +239,10 @@ class ImageConverter {
             // We use filereader readAsDataURL, so result is a string
             this.$loadedImage.src = <string>this.fileReader.result;
         }
+
+        this.dropHandler = this.onDropFile;
+        this.dragHandler = this.onDrag;
+        this.dragLeaveHandler = this.onDragLeave;
     }
 
     private onClickUpload() {
@@ -245,6 +259,7 @@ class ImageConverter {
             return;
         }
 
+        this.file = selectedFile;
         this.fileReader.readAsDataURL(selectedFile);
     }
 
@@ -253,17 +268,16 @@ class ImageConverter {
         this.$loadedImage.style.display = 'block';
 
         // Render meta data of loaded image.
-        const file = this.$btnInput.files[0];
         const imageDimension = {
             width: this.$loadedImage.naturalWidth,
             height: this.$loadedImage.naturalHeight
         }
 
-        this.$imageName.innerText = file.name;
-        this.$imageSize.innerText = `Filesize: ${file.size} Bytes`;
+        this.$imageName.innerText = this.file.name;
+        this.$imageSize.innerText = `Filesize: ${this.file.size} Bytes`;
         this.$imageDimension.innerText = `Width: ${imageDimension.width}px / Height: ${imageDimension.height}px`;
         this.$imageAspectRatio.innerText = `Aspect Ratio: ${(imageDimension.width / imageDimension.height).toFixed(2)}`;
-        this.$fileType.innerText = `File type: ${file.type}`;
+        this.$fileType.innerText = `File type: ${this.file.type}`;
 
         // Decode image pixel data
         this.tempCanvas.width = imageDimension.width;
@@ -275,8 +289,8 @@ class ImageConverter {
         
         // Render output
         const code = this.getCode(ConverterMode.OneBit, pixeldata.data);
-        this.$code.innerText = code;
         this.renderPreview(code);
+        this.$code.innerText = this.generateProgramCode(code);
     }
 
     /**
@@ -289,9 +303,9 @@ class ImageConverter {
         const settings: ConverterSettings = {
             asciiArt: true,
             asciiCharacter: '*',
-            invert: true,
+            invert: this.$btnInverting.checked,
             format: OutputFormat.Binary,
-            imageType: this.$btnInput.files[0].type,
+            imageType: this.file.type,
             pixelData: pixelData
         };
 
@@ -349,6 +363,29 @@ class ImageConverter {
             }
         }
         code += '\n';
+
+        return code;
+    }
+
+    private onDropFile(event: DragEvent) {
+        event.preventDefault();
+
+        this.file = event.dataTransfer.files[0];
+        this.fileReader.readAsDataURL(this.file);
+    }
+
+    private onDrag(event: DragEvent) {
+        event.preventDefault();
+        this.$dropArea.setAttribute('dragging', 'true');
+    }
+
+    private onDragLeave(event: DragEvent) {
+        event.preventDefault();
+        this.$dropArea.removeAttribute('dragging');
+    }
+
+    private generateProgramCode(code: string): string {
+
 
         return code;
     }

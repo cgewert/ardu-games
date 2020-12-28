@@ -11,7 +11,8 @@
         <div class="input-area">
           <h2>Select or drag and drop an image</h2>
           <div class="controls-wrapper">
-            <div id="dragArea"></div>
+            <div id="dropArea" ondrop="imageConverter.dropHandler(event);" ondragover="imageConverter.dragHandler(event);" ondragleave="imageConverter.dragLeaveHandler(event);">
+            </div>
           </div>
         </div>
         <div class="meta-data">
@@ -27,13 +28,31 @@
           </div>
         </div>
       </div>
-      <div class="settings-wrapper"></div>
+      <div class="settings-wrapper">
+        <h2>Settings</h2>
+        <div class="invert">
+          <label for="btnInverting">Inverting:</label>
+          <input type="checkbox" name="btnInverting" id="btnInverting">
+        </div>
+        <div class="format">
+          <span>Output Format:</span>
+          <label for="binary">Binary</label>
+          <input type="radio" name="outputFormat" id="binary" checked>
+          <label for="hex">Hexadecimal</label>
+          <input type="radio" name="outputFormat" id="hex">
+        </div>
+        <div class="ascii">
+          <label for="btnAscii">Generate ASCII Art:</label>
+          <input type="checkbox" name="btnAscii" id="btnAscii">
+        </div>
+      </div>
       <div class="output-wrapper">
         <div id="code">&nbsp;</div>
+        <h2>Preview Image:</h2>
         <canvas id="previewImage"></canvas>
       </div>
       <script>
-      let imageConverter = new ImageConverter();
+        let imageConverter = new ImageConverter();
       </script>
     </body>
 </html>
