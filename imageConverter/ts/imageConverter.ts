@@ -171,6 +171,25 @@
     }
   }*/
 
+const enum ConverterMode {
+    OneBit,
+}
+
+const enum OutputFormat {
+    Binary,
+    Hexadecimal
+}
+
+
+interface ConverterSettings {
+    invert: boolean;
+    asciiArt: boolean;
+    asciiCharacter: string;
+    format?: OutputFormat;
+    imageType: string;
+    pixelData: Uint8ClampedArray;
+}
+
 class ImageConverter {
     private $btnInput = document.createElement('input');
     private $dragArea = document.getElementById('dragArea');
@@ -182,6 +201,7 @@ class ImageConverter {
     private $imageAspectRatio = document.getElementById('aspect');
     private $fileType = document.getElementById('fileType');
     private $code = document.getElementById('code');
+    private $preview = <HTMLCanvasElement>document.getElementById('previewImage');
     private fileReader = new FileReader();
 
     constructor() {
@@ -229,20 +249,107 @@ class ImageConverter {
     }
 
     private refresh() {
+        // Trigger visibility of loaded image.
         this.$loadedImage.style.display = 'block';
+
+        // Render meta data of loaded image.
         const file = this.$btnInput.files[0];
+        const imageDimension = {
+            width: this.$loadedImage.naturalWidth,
+            height: this.$loadedImage.naturalHeight
+        }
+
         this.$imageName.innerText = file.name;
         this.$imageSize.innerText = `Filesize: ${file.size} Bytes`;
-        const imageDimension = {
-            x: this.$loadedImage.naturalWidth,
-            y: this.$loadedImage.naturalHeight
-        }
-        this.$imageDimension.innerText = `Width: ${this.$loadedImage.naturalWidth}px / Height: ${this.$loadedImage.naturalHeight}px`;
-        this.$imageAspectRatio.innerText = `Aspect Ratio: ${(imageDimension.x / imageDimension.y).toFixed(2)}`;
+        this.$imageDimension.innerText = `Width: ${imageDimension.width}px / Height: ${imageDimension.height}px`;
+        this.$imageAspectRatio.innerText = `Aspect Ratio: ${(imageDimension.width / imageDimension.height).toFixed(2)}`;
         this.$fileType.innerText = `File type: ${file.type}`;
+
+        // Decode image pixel data
+        this.tempCanvas.width = imageDimension.width;
+        this.tempCanvas.height = imageDimension.height;
         const tempContext = this.tempCanvas.getContext('2d');
         tempContext.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
         tempContext.drawImage(this.$loadedImage, 0, 0);
-        console.log(tempContext.getImageData(0, 0, imageDimension.x, imageDimension.y));
+        const pixeldata = tempContext.getImageData(0, 0, imageDimension.width, imageDimension.height);
+        
+        // Render output
+        const code = this.getCode(ConverterMode.OneBit, pixeldata.data);
+        this.$code.innerText = code;
+        this.renderPreview(code);
+    }
+
+    /**
+     * Generates a string containing decoded pixel data as 
+     * bitmask and optional ascii art.
+     * @param mode The code generation mode. Default is 1 Bit.
+     */
+    private getCode(mode=ConverterMode.OneBit, pixelData: Uint8ClampedArray): string {
+        let code = '';
+        const settings: ConverterSettings = {
+            asciiArt: true,
+            asciiCharacter: '*',
+            invert: true,
+            format: OutputFormat.Binary,
+            imageType: this.$btnInput.files[0].type,
+            pixelData: pixelData
+        };
+
+        switch (mode) {
+            case ConverterMode.OneBit:
+                code = this.convertToOneBit(settings);
+                break;
+            default:
+                break;
+        }
+
+        return code;
+    }
+
+    /**
+     * Renders the generated image in the preview canvas.
+     * @param code The bitmap string.
+     */
+    private renderPreview(code: string): void {
+        this.$preview.width = this.tempCanvas.width;
+        this.$preview.height = this.tempCanvas.height;
+        const context = this.$preview.getContext('2d');
+        let imageData = [];
+
+        for(let index = 0; index < code.length; index++) {
+            if(!code[index].match('[10]')){
+                continue
+            };
+
+            const pixel = code[index] === '1' ? [255, 255, 255, 255] : [0, 0, 0, 255];
+            imageData.push(...pixel);
+        }
+        
+        let imageDataUint8 = new Uint8ClampedArray(imageData);
+        context.putImageData(new ImageData(imageDataUint8, this.tempCanvas.width, this.tempCanvas.height), 0, 0);
+    }
+
+    private convertToOneBit(settings: ConverterSettings): string {
+        let code = '';
+        let bitOn = settings.invert ? '0' : '1';
+        let bitOff = (1 - parseInt(bitOn, 2)).toString();
+        const pixelSize = 4;
+        const data: Uint8ClampedArray = settings.pixelData;
+        const imageWidth = this.tempCanvas.width;
+
+        for (let index = 0, red, green, blue, alpha; index < data.length; index += pixelSize) {
+            // @ts-ignore
+            [red, green, blue, alpha] = data.slice(index, index + pixelSize);
+            
+            const pixelSum = red + green + blue + alpha;
+
+            code += pixelSum === 255 ? bitOff : bitOn;
+            if((index + pixelSize) % (imageWidth * pixelSize) === 0) {
+                code += '\n';
+            }
+        }
+        code += '\n';
+
+        return code;
     }
 }
