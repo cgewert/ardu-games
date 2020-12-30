@@ -12,6 +12,11 @@ html, body {
   font-family: 'Source Code Pro', monospace; 
 }
 
+body{
+  display: flex;
+  flex-direction: column;
+}
+
 h1{
   text-align: center;
 }
@@ -102,6 +107,8 @@ h2{
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  align-self: center;
+  width: 95%;
 
   #code{
     font-size: 20px;
