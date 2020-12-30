@@ -2,6 +2,7 @@
 
 $interactive-background: rgb(121, 133, 131);
 $interactive-background-hover:  rgb(221, 233, 231);
+$settings-col-left-width: 250px;
 
 html, body {
   margin: 0;
@@ -170,20 +171,23 @@ h2{
   font-size: 20px;
 
   .invert{
-    label{
-      width: 220px;
+    div{
+      display: inline-block;
+      width: $settings-col-left-width;
     }
   }
 
   .format{
-    span{
-      width: 220px;
+    div{
+      width: $settings-col-left-width;
+      display: inline-block;
     }
   }
 
   .ascii{
-    label{
-      width: 220px;
+    div{
+      display: inline-block;
+      width: $settings-col-left-width;
     }
   }
 }
