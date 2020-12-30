@@ -1,5 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat&family=Source+Code+Pro:wght@300&display=swap");
 
+$interactive-background: rgb(121, 133, 131);
+$interactive-background-hover:  rgb(221, 233, 231);
+
 html, body {
   margin: 0;
   padding: 0;
@@ -38,7 +41,7 @@ h2{
     #dropArea{
       width: 100%;
       height: 250px;
-      background-color:rgb(121, 133, 131);
+      background-color: $interactive-background;
       border: black dashed 3px;
       border-radius: 5px;
       background-image: url('../upload.svg');
@@ -48,12 +51,12 @@ h2{
     }
 
     #dropArea:hover{
-      background-color: rgb(221, 233, 231);
+      background-color: $interactive-background-hover;
       cursor: pointer;
     }
 
     #dropArea[dragging=true]{
-      background-color: rgb(221, 233, 231);
+      background-color: $interactive-background-hover;
     }
   }
 
@@ -94,25 +97,70 @@ h2{
 
 .output-wrapper{
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
 
   #code{
     font-size: 20px;
     border: 1px solid black;
-    width: 95%;
+    width: 70%;
     min-width: 750px;
     height: 500px;
     overflow: scroll;
     margin: 25px 0;
     padding: 10px;
+    flex: 2;
   }
 
-  #previewImage{
-    width: 256px;
-    height: 256px;
-    background-color: black;
+  .clipboard-wrapper{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    flex: 1;
+
+    #copied{
+      align-self: center;
+      opacity: 0.0;
+      font-size: 20px;
+      padding: 10px 0;
+    }
+
+    #btnClipboard{
+      align-self: center;
+      width: 75px;
+      height: 75px;
+      border: black dashed 3px;
+      border-radius: 5px;
+      background: url(../copy.svg);
+      background-size: 50px 50px;
+      background-position: center;
+      background-color: $interactive-background;
+      background-repeat: no-repeat;
+      cursor: pointer;
+    }
+
+    #btnClipboard:hover{
+      background-color: $interactive-background-hover;
+    }
+  }
+  
+  .preview-wrapper{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    h2{
+      align-self: center;
+    }
+
+    #previewImage{
+      align-self: center;
+      width: 256px;
+      height: 256px;
+      background-color: black;
+    }
   }
 }
 

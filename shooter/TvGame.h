@@ -2,7 +2,6 @@
 #include <TVout.h>
 #include <fontALL.h>
 #include <SPI.h>
-#include <NintendoExtensionCtrl.h>
 
 #ifndef _TVGAME_H
 #define _TVGAME_H

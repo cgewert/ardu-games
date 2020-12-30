@@ -197,6 +197,8 @@ class ImageConverter {
 
     private $btnInput = document.createElement('input');
     private $btnInverting = <HTMLInputElement>document.getElementById('btnInverting');
+    private $btnClipboard = <HTMLInputElement>document.getElementById('btnClipboard');
+    private $txtCopied = <HTMLInputElement>document.getElementById('copied');
     private $dropArea = document.getElementById('dropArea');
     private $loadedImage = <HTMLImageElement>document.getElementById('loadedImage');
     private tempCanvas = document.createElement('canvas');
@@ -205,7 +207,7 @@ class ImageConverter {
     private $imageDimension = document.getElementById('imageDimension');
     private $imageAspectRatio = document.getElementById('aspect');
     private $fileType = document.getElementById('fileType');
-    private $code = document.getElementById('code');
+    private $code = <HTMLDivElement>document.getElementById('code');
     private $preview = <HTMLCanvasElement>document.getElementById('previewImage');
     private fileReader = new FileReader();
     private file: File;
@@ -221,6 +223,10 @@ class ImageConverter {
         // Register event handlers
         this.$dropArea.addEventListener('click', () => {
             this.onClickUpload();
+        });
+
+        this.$btnClipboard.addEventListener('click', () => {
+            this.onClickClipboard();
         });
 
         this.$btnInput.onchange = () => {
@@ -264,6 +270,8 @@ class ImageConverter {
     }
 
     private refresh() {
+        if(!this.file){ return; }
+
         // Trigger visibility of loaded image.
         this.$loadedImage.style.display = 'block';
 
@@ -385,8 +393,61 @@ class ImageConverter {
     }
 
     private generateProgramCode(code: string): string {
+        code = '11000000\n00000000\n011\n11000000\n00000000\n011\n';
+        code = code.replaceAll('\n', '');
+        //const width = this.tempCanvas.width;
+        const width = 19;
+        //const height = this.tempCanvas.height;
+        const height = 2;
+        let generatedProgramCode = `\{\n${width}, ${height},\n`;
 
+        while(code.length > 0){
+            let byte = code.substr(0, 8);
+            code = code.substr(byte.length);
+            byte = byte.padEnd(8, '0');
+            generatedProgramCode += `B${byte}, `;
+        };
+        /*let byte2dArray = []
+        for (let y = 0; y < width * height; y += width) {
+            let row = [];
+            let rowEnd = y + width;
+            let x = y;
+            while (x < rowEnd) {
+                let length = Math.min(rowEnd - x, x + 8);
+                let bytePiece = code.substr(x, length);
+                bytePiece = bytePiece.padEnd(8, "0");
+                row.push(`B${bytePiece}`);
+                x += 8;
+            }
+            byte2dArray.push(row);
+        }
 
-        return code;
+        // Convert 2d array to desired string
+        let byteArrayAsString = byte2dArray.map(row => {
+            return row.join(", ")
+        })
+        let result = byteArrayAsString.join(",\n");
+        generatedProgramCode += result;*/
+
+        generatedProgramCode += `\n};`
+
+        return generatedProgramCode;
+    }
+
+    private onClickClipboard(): void {
+        const fakeInput = document.createElement('textarea');
+        this.$txtCopied.style.opacity = '1.0';
+        this.$txtCopied.style.transition = 'none';
+        setTimeout(() => {
+            this.$txtCopied.style.opacity = '0.0';
+            this.$txtCopied.style.transition = 'opacity 3s';
+        }, 2500);
+        //fakeInput.type = 'text';
+        document.body.appendChild(fakeInput);
+        fakeInput.value = this.$code.innerText;
+        fakeInput.select();
+        fakeInput.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        fakeInput.style.visibility = 'hidden';
     }
 }

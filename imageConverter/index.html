@@ -11,7 +11,7 @@
         <div class="input-area">
           <h2>Select or drag and drop an image</h2>
           <div class="controls-wrapper">
-            <div id="dropArea" ondrop="imageConverter.dropHandler(event);" ondragover="imageConverter.dragHandler(event);" ondragleave="imageConverter.dragLeaveHandler(event);">
+            <div id="dropArea" title="Select a file for uploading" ondrop="imageConverter.dropHandler(event);" ondragover="imageConverter.dragHandler(event);" ondragleave="imageConverter.dragLeaveHandler(event);">
             </div>
           </div>
         </div>
@@ -48,8 +48,14 @@
       </div>
       <div class="output-wrapper">
         <div id="code">&nbsp;</div>
-        <h2>Preview Image:</h2>
-        <canvas id="previewImage"></canvas>
+        <div class="clipboard-wrapper">
+          <span id="copied">Copied code!</span>
+          <div id="btnClipboard" title="Copy code to clipboard"></div>
+        </div>
+        <div class="preview-wrapper">
+          <h2>Preview Image:</h2>
+          <canvas id="previewImage"></canvas>
+        </div>
       </div>
       <script>
         let imageConverter = new ImageConverter();
