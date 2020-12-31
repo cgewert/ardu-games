@@ -197,6 +197,8 @@ class ImageConverter {
 
     private $btnInput = document.createElement('input');
     private $btnInverting = <HTMLInputElement>document.getElementById('btnInverting');
+    private $btnBinary = <HTMLInputElement>document.getElementById('binary');
+    private $btnHex = <HTMLInputElement>document.getElementById('hex');
     private $btnClipboard = <HTMLInputElement>document.getElementById('btnClipboard');
     private $txtCopied = <HTMLInputElement>document.getElementById('copied');
     private $dropArea = document.getElementById('dropArea');
@@ -234,6 +236,14 @@ class ImageConverter {
         };
 
         this.$btnInverting.onchange = () => {
+            this.refresh();
+        };
+
+        this.$btnHex.onchange = () => {
+            this.refresh();
+        };
+
+        this.$btnBinary.onchange = () => {
             this.refresh();
         };
 
@@ -308,18 +318,10 @@ class ImageConverter {
      */
     private getCode(mode=ConverterMode.OneBit, pixelData: Uint8ClampedArray): string {
         let code = '';
-        const settings: ConverterSettings = {
-            asciiArt: true,
-            asciiCharacter: '*',
-            invert: this.$btnInverting.checked,
-            format: OutputFormat.Binary,
-            imageType: this.file.type,
-            pixelData: pixelData
-        };
 
         switch (mode) {
             case ConverterMode.OneBit:
-                code = this.convertToOneBit(settings);
+                code = this.convertToOneBit(pixelData);
                 break;
             default:
                 break;
@@ -351,8 +353,17 @@ class ImageConverter {
         context.putImageData(new ImageData(imageDataUint8, this.tempCanvas.width, this.tempCanvas.height), 0, 0);
     }
 
-    private convertToOneBit(settings: ConverterSettings): string {
+    private convertToOneBit(pixelData: Uint8ClampedArray): string {
         let code = '';
+        const outPutFormat = this.$btnHex.checked ? OutputFormat.Hexadecimal : OutputFormat.Binary;
+        const settings: ConverterSettings = {
+            asciiArt: true,
+            asciiCharacter: '*',
+            invert: this.$btnInverting.checked,
+            format: outPutFormat,
+            imageType: this.file.type,
+            pixelData: pixelData
+        };
         let bitOn = settings.invert ? '0' : '1';
         let bitOff = (1 - parseInt(bitOn, 2)).toString();
         const pixelSize = 4;
@@ -393,43 +404,51 @@ class ImageConverter {
     }
 
     private generateProgramCode(code: string): string {
-        code = '11000000\n00000000\n011\n11000000\n00000000\n011\n';
         code = code.replaceAll('\n', '');
-        //const width = this.tempCanvas.width;
-        const width = 19;
-        //const height = this.tempCanvas.height;
-        const height = 2;
+        const width = this.tempCanvas.width;
+        const height = this.tempCanvas.height;
         let generatedProgramCode = `\{\n${width}, ${height},\n`;
-
-        while(code.length > 0){
+        const outPutFormat = this.$btnHex.checked ? OutputFormat.Hexadecimal : OutputFormat.Binary;
+        
+        /*while(code.length > 0){
             let byte = code.substr(0, 8);
             code = code.substr(byte.length);
             byte = byte.padEnd(8, '0');
             generatedProgramCode += `B${byte}, `;
-        };
-        /*let byte2dArray = []
+        };*/
+
+        code = code.replaceAll("\n", "");
+        let byte2dArray = [];
+
         for (let y = 0; y < width * height; y += width) {
             let row = [];
-            let rowEnd = y + width;
+            const rowEnd = y + width;
             let x = y;
             while (x < rowEnd) {
-                let length = Math.min(rowEnd - x, x + 8);
+                const length = Math.min(rowEnd - x, 8);
                 let bytePiece = code.substr(x, length);
                 bytePiece = bytePiece.padEnd(8, "0");
-                row.push(`B${bytePiece}`);
+                if(outPutFormat === OutputFormat.Hexadecimal){
+                    bytePiece = parseInt(bytePiece, 2)
+                        .toString(16)
+                        .toUpperCase()
+                        .padStart(2, '0');
+                    row.push(`0x${bytePiece}`);
+                } else {
+                    row.push(`B${bytePiece}`);
+                }
+                
                 x += 8;
             }
             byte2dArray.push(row);
         }
 
         // Convert 2d array to desired string
-        let byteArrayAsString = byte2dArray.map(row => {
-            return row.join(", ")
-        })
-        let result = byteArrayAsString.join(",\n");
-        generatedProgramCode += result;*/
+        let byteArrayAsString = byte2dArray
+            .map(row => row.join(", "))
+            .join(",\n");
 
-        generatedProgramCode += `\n};`
+        generatedProgramCode += `${byteArrayAsString}\n};`
 
         return generatedProgramCode;
     }

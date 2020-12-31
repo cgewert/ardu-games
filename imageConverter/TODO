@@ -1,6 +1,6 @@
 
 Todo:
-  ☐ Finish binary code output
-  ☐ Finish hexadecimal code output
+  ✔ Finish binary code output @done(20-12-30 23:50)
+  ✔ Finish hexadecimal code output @done(20-12-31 02:16)
   ☐ Create ascii art for image
   ✔ Add copy code to clipboard button @done(20-12-30 00:34)
