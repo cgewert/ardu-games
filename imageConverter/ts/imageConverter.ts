@@ -29,6 +29,7 @@ class ImageConverter {
     private $btnHex = <HTMLInputElement>document.getElementById('hex');
     private $btnThreshold = <HTMLInputElement>document.getElementById('btnThreshold');
     private $btnClipboard = <HTMLInputElement>document.getElementById('btnClipboard');
+    private $inputIdentifier = <HTMLInputElement>document.getElementById('inputIdentifier');
     private $txtCopied = <HTMLInputElement>document.getElementById('copied');
     private $dropArea = document.getElementById('dropArea');
     private $loadedImage = <HTMLImageElement>document.getElementById('loadedImage');
@@ -42,6 +43,7 @@ class ImageConverter {
     private $preview = <HTMLCanvasElement>document.getElementById('previewImage');
     private fileReader = new FileReader();
     private file: File;
+    private symbolDefinition = '';
 
     constructor() {
         this.init();
@@ -81,6 +83,12 @@ class ImageConverter {
         };
 
         this.$btnThreshold.onchange = () => {
+            this.refresh();
+        };
+
+        this.$inputIdentifier.onchange = () => {
+            const csymbol = this.$inputIdentifier.value.trim();
+            this.symbolDefinition = `const unsigned char ${csymbol}[] PROGMEM = `;
             this.refresh();
         };
 
@@ -209,10 +217,7 @@ class ImageConverter {
 
         for (let index = 0, red, green, blue, alpha; index < data.length; index += pixelSize) {
             [red, green, blue, alpha] = data.slice(index, index + pixelSize);
-            
-            /*const pixelSum = red + green + blue + alpha;
-            code += pixelSum === 255 ? bitOff : bitOn;*/
-            
+
             const pixelSum = red + green + blue;
             const threshold = parseInt(this.$btnThreshold.value, 10);
             code += pixelSum / 3 >= threshold ? bitOn : bitOff;
@@ -250,6 +255,7 @@ class ImageConverter {
         const height = this.tempCanvas.height;
         const outPutFormat = this.$btnHex.checked ? OutputFormat.Hexadecimal : OutputFormat.Binary;
         let asciiArt = Array<String>();
+        let generatedProgramCode = '';
 
         // Generate ASCII Art for each row of pixels
         if(ascii) {
@@ -260,7 +266,10 @@ class ImageConverter {
 
         // Generate code output
         code = code.replaceAll('\n', '');
-        let generatedProgramCode = `\{\n${width}, ${height},\n`;
+        if(this.$inputIdentifier.value.trim()){
+            generatedProgramCode += this.symbolDefinition;
+        }
+        generatedProgramCode += `{\n${width}, ${height},\n`;
         let byte2dArray = [];
 
         for (let y = 0; y < width * height; y += width) {
