@@ -2,5 +2,7 @@
 Todo:
   ✔ Finish binary code output @done(20-12-30 23:50)
   ✔ Finish hexadecimal code output @done(20-12-31 02:16)
-  ☐ Create ascii art for image
+  ✔ Create ascii art for image @done(21-01-02 01:16)
   ✔ Add copy code to clipboard button @done(20-12-30 00:34)
+  ☐ Add treshold functionality to make grayscale / color images work
+  ☐ Add C File with identifier creation mode

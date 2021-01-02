@@ -195,6 +195,7 @@ class ImageConverter {
     public dragHandler: Function;
     public dragLeaveHandler: Function;
 
+    private $btnAscii = <HTMLInputElement>document.getElementById('btnAscii');
     private $btnInput = document.createElement('input');
     private $btnInverting = <HTMLInputElement>document.getElementById('btnInverting');
     private $btnBinary = <HTMLInputElement>document.getElementById('binary');
@@ -240,6 +241,10 @@ class ImageConverter {
         };
 
         this.$btnHex.onchange = () => {
+            this.refresh();
+        };
+
+        this.$btnAscii.onchange = () => {
             this.refresh();
         };
 
@@ -371,7 +376,6 @@ class ImageConverter {
         const imageWidth = this.tempCanvas.width;
 
         for (let index = 0, red, green, blue, alpha; index < data.length; index += pixelSize) {
-            // @ts-ignore
             [red, green, blue, alpha] = data.slice(index, index + pixelSize);
             
             const pixelSum = red + green + blue + alpha;
@@ -404,20 +408,23 @@ class ImageConverter {
     }
 
     private generateProgramCode(code: string): string {
-        code = code.replaceAll('\n', '');
+        const rows = code.split('\n');
+        const ascii = this.$btnAscii.checked;
         const width = this.tempCanvas.width;
         const height = this.tempCanvas.height;
-        let generatedProgramCode = `\{\n${width}, ${height},\n`;
         const outPutFormat = this.$btnHex.checked ? OutputFormat.Hexadecimal : OutputFormat.Binary;
-        
-        /*while(code.length > 0){
-            let byte = code.substr(0, 8);
-            code = code.substr(byte.length);
-            byte = byte.padEnd(8, '0');
-            generatedProgramCode += `B${byte}, `;
-        };*/
+        let asciiArt = Array<String>();
 
-        code = code.replaceAll("\n", "");
+        // Generate ASCII Art for each row of pixels
+        if(ascii) {
+            rows.forEach(row => {
+                asciiArt.push(this.createAsciiArt(row));
+            });
+        }
+
+        // Generate code output
+        code = code.replaceAll('\n', '');
+        let generatedProgramCode = `\{\n${width}, ${height},\n`;
         let byte2dArray = [];
 
         for (let y = 0; y < width * height; y += width) {
@@ -444,11 +451,22 @@ class ImageConverter {
         }
 
         // Convert 2d array to desired string
-        let byteArrayAsString = byte2dArray
-            .map(row => row.join(", "))
-            .join(",\n");
-
-        generatedProgramCode += `${byteArrayAsString}\n};`
+        byte2dArray = byte2dArray.map(row => row.join(", "));
+        let byteArrayAsString = '';
+        if(!this.$btnAscii.checked) {
+            byteArrayAsString = byte2dArray.join(',\n');
+            byteArrayAsString += '\n';
+        } else {
+            // Append ASCII art
+            for (let index = 0; index < height; index++) {
+                if(index != height-1){
+                    byteArrayAsString += `${byte2dArray[index]},${asciiArt[index]}`;
+                } else {
+                    byteArrayAsString += `${byte2dArray[index]} ${asciiArt[index]}`;
+                }
+            }
+        }
+        generatedProgramCode += `${byteArrayAsString}};`
 
         return generatedProgramCode;
     }
@@ -461,12 +479,19 @@ class ImageConverter {
             this.$txtCopied.style.opacity = '0.0';
             this.$txtCopied.style.transition = 'opacity 3s';
         }, 2500);
-        //fakeInput.type = 'text';
         document.body.appendChild(fakeInput);
         fakeInput.value = this.$code.innerText;
         fakeInput.select();
         fakeInput.setSelectionRange(0, 99999);
         document.execCommand('copy');
         fakeInput.style.visibility = 'hidden';
+    }
+
+    private createAsciiArt(row: string): string {
+        row = row.replaceAll('0', '◻');
+        row = row.replaceAll('1', '◼');
+        row = ` // ${row}\n`;
+
+        return row;
     }
 }
