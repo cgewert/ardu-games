@@ -15,34 +15,24 @@ html, body {
 body{
   display: flex;
   flex-direction: column;
-}
-
-h1{
-  text-align: center;
-}
-
-h2{
-  padding: 0;
-  margin: 0 0 10px 0;
+  align-items: center;
+  min-width: 1000px;
 }
 
 .input-wrapper{
-  width: 100%;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  width: 1000px;
 
-  .input-area, .meta-data{
-    padding: 10px 20px;
+  .input-area{
     flex: 1;
-    min-width: 400px;
   }
 
   .controls-wrapper{
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 20px 0 0 0;
 
     #dropArea{
       width: 100%;
@@ -66,10 +56,20 @@ h2{
     }
   }
 
-  .meta-data{
-    display: flex;
-    flex-direction: row;
+  .meta-area{
+    display: block;
+    flex: 2;
     
+    h2{
+      text-align: center;
+    }
+
+    .meta-wrapper{
+      display: flex;
+      flex-direction: row;
+      padding: 0 15px;
+    }
+
     .left-column{
       flex: 1;
       display: flex;
@@ -82,7 +82,6 @@ h2{
       }
 
       #imageName{
-        margin-bottom: 10px;
         font-size: 20px;
       }
     }
@@ -92,11 +91,6 @@ h2{
       font-size: 20px;
       display: flex;
       flex-direction: column;
-      padding: 5px;
-
-      div{
-        padding: 5px;
-      }
     }
   }
 }
@@ -108,18 +102,15 @@ h2{
   align-items: center;
   justify-content: center;
   align-self: center;
-  width: 95%;
+  width: 1000px;
 
   #code{
-    font-size: 20px;
+    font-size: 14px;
     border: 1px solid black;
-    width: 70%;
-    min-width: 750px;
     height: 500px;
-    overflow: scroll;
-    margin: 25px 0;
-    padding: 10px;
-    flex: 2;
+    overflow: auto;
+    flex: 4;
+    margin: 0;
   }
 
   .clipboard-wrapper{
@@ -133,6 +124,10 @@ h2{
       opacity: 0.0;
       font-size: 20px;
       padding: 10px 0;
+      background-color: #91e302;
+      color: #3f6300;
+      border-radius: 5px;
+      margin: 0 0 10px 0;
     }
 
     #btnClipboard{
@@ -173,29 +168,15 @@ h2{
 }
 
 .settings-wrapper{
-  margin: auto;
-  width: 95%;
-  font-size: 20px;
+  width: 1000px;
 
-  .invert{
-    div{
-      display: inline-block;
-      width: $settings-col-left-width;
-    }
+  div{
+    font-size: 20px;
   }
 
-  .format{
-    div{
-      width: $settings-col-left-width;
-      display: inline-block;
-    }
-  }
-
-  .ascii{
-    div{
-      display: inline-block;
-      width: $settings-col-left-width;
-    }
+  .settings-label{
+    display: inline-block;
+    width: $settings-col-left-width;
   }
 
   .identifier{

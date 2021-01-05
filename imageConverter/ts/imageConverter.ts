@@ -36,7 +36,8 @@ class ImageConverter {
     private tempCanvas = document.createElement('canvas');
     private $imageName = document.getElementById('imageName');
     private $imageSize = document.getElementById('imageSize');
-    private $imageDimension = document.getElementById('imageDimension');
+    private $imageWidth = document.getElementById('imageWidth');
+    private $imageHeight = document.getElementById('imageHeight');
     private $imageAspectRatio = document.getElementById('aspect');
     private $fileType = document.getElementById('fileType');
     private $code = <HTMLDivElement>document.getElementById('code');
@@ -138,7 +139,8 @@ class ImageConverter {
 
         this.$imageName.innerText = this.file.name;
         this.$imageSize.innerText = `Filesize: ${this.file.size} Bytes`;
-        this.$imageDimension.innerText = `Width: ${imageDimension.width}px / Height: ${imageDimension.height}px`;
+        this.$imageWidth.innerText = `Width: ${imageDimension.width}px`;
+        this.$imageHeight.innerText = `Height: ${imageDimension.height}px`;
         this.$imageAspectRatio.innerText = `Aspect Ratio: ${(imageDimension.width / imageDimension.height).toFixed(2)}`;
         this.$fileType.innerText = `File type: ${this.file.type}`;
 
@@ -327,7 +329,6 @@ class ImageConverter {
         document.body.appendChild(fakeInput);
         fakeInput.value = this.$code.innerText;
         fakeInput.select();
-        fakeInput.setSelectionRange(0, 99999);
         document.execCommand('copy');
         fakeInput.style.visibility = 'hidden';
     }
