@@ -45,7 +45,7 @@ struct Bullet {
 //    uint8_t type = TYPE_ENEMY;
 };
 
-byte gamestate = 0;
+byte gamestate = GAMESTATE_TITLE;
 byte nextGamestate = 0;
 TvGame game;
 AnalogStickController controller;
@@ -116,16 +116,20 @@ void newGame() {
     nextLevel();
 }
 
+// Is being called before a new level starts.
 bool nextLevel() {
     for (byte i = 0; i < MAX_ENEMIES; i++) {
         enemies[i].state = STATE_INACTIVE;
     }
+    
     for (byte i = 0; i < MAX_SHOTS; i++) {
         shots[i].state = STATE_INACTIVE;
     }
+    
     for (byte i = 0; i < MAX_BULLETS; i++) {
         bullets[i].state = STATE_INACTIVE;
     }
+    
     if (levelCount < MAX_LEVEL) {
         levelCount++;
         switch (levelCount) {
@@ -136,8 +140,13 @@ bool nextLevel() {
         levelMaxTime = (uint8_t)pgm_read_byte(currentLevel + 1);
         levelStartTime = millis();
         levelCursor = 0;
+        // Reset player position to default position
+        player.bounds.x = 0;
+        player.bounds.y = game.height / 2;
+        
         return true;
     }
+    
     return false;
 }
 
@@ -272,7 +281,7 @@ void loop() {
 
         // Main game
         case GAMESTATE_GAME:
-            timeElapsed = (millis() -levelStartTime) /1000;
+            timeElapsed = (millis() - levelStartTime) / 1000;
 
             // Level end is depending on time elapsed
             if (timeElapsed == levelMaxTime) {
@@ -282,7 +291,7 @@ void loop() {
 
             // Player control
             if (abs(controller.getRelativeX()) > 0.05) {
-                player.bounds.x += controller.getRelativeX() *2;
+                player.bounds.x += controller.getRelativeX() * 2;
                 if (player.bounds.x + player.bounds.width > game.width) player.bounds.x = game.width - player.bounds.width;
                 if (player.bounds.x < 0) player.bounds.x = 0;
             }
@@ -537,4 +546,3 @@ void loop() {
 
     gamestate = nextGamestate;
 }
-
