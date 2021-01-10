@@ -2,6 +2,26 @@
 #ifndef SPRITES_GFX_H
 #define SPRITES_GFX_H
 
+const unsigned char blink1[] PROGMEM = {
+    5, 5,
+    0x00, // ◻◻◻◻◻
+    0x20, // ◻◻◼◻◻
+    0x70, // ◻◼◼◼◻
+    0x20, // ◻◻◼◻◻
+    0x00  // ◻◻◻◻◻
+};
+
+const unsigned char blink2[] PROGMEM = {
+    7, 7,
+    0x00, // ◻◻◻◻◻◻◻
+    0x10, // ◻◻◻◼◻◻◻
+    0x38, // ◻◻◼◼◼◻◻
+    0x7C, // ◻◼◼◼◼◼◻
+    0x38, // ◻◻◼◼◼◻◻
+    0x10, // ◻◻◻◼◻◻◻
+    0x00  // ◻◻◻◻◻◻◻
+};
+
 const unsigned char gfxExplosion1[] PROGMEM = {
     8, 8,
     0x00, // ◻◻◻◻◻◻◻◻

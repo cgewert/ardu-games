@@ -56,6 +56,7 @@ Bullet shots[MAX_SHOTS];
 Bullet bullets[MAX_BULLETS];
 
 const unsigned int* currentLevel;
+byte starIndex = 0; // Is being used for title screen animation
 unsigned long levelStartTime = 0;
 unsigned long timeElapsed = 0;
 unsigned long levelMaxTime = 0;
@@ -262,6 +263,7 @@ void drawStatusText() {
 
 void loop() {
     if (!game.nextFrame()) return;
+
     controller.updateControllerState();
     byte i = 0;
     byte k = 0;
@@ -273,6 +275,35 @@ void loop() {
         // Title screen
         case GAMESTATE_TITLE:
             game.drawBitmap(0, 0, titleGfx);
+
+            // Every 5 seconds another blinking star should be drawn
+            if( !game.everyXFrames(80) ){
+                switch (starIndex)
+                {
+                    case 1:
+                        game.drawBitmap(108, 50, blink2);
+                        break;
+                    case 2:
+                        game.drawBitmap(109, 51, blink1);
+                        break;
+                    case 3:
+                        game.drawBitmap(123, 12, blink1);
+                        break;
+                    case 4:
+                        game.drawBitmap(73, 17, blink1);
+                        break;
+                    case 5:
+                        game.drawBitmap(72, 16, blink2);
+                        game.drawBitmap(16, 6, blink1);
+                        break;
+                    default:
+                        starIndex = 0;
+                }
+            }
+            if( game.everyXFrames(80) ){
+                starIndex++;
+            }
+
             if (controller.justPressed(BUTTON_A)) {
                 newGame();
                 nextGamestate = GAMESTATE_GAME;
@@ -473,7 +504,7 @@ void loop() {
                     game.drawBitmap(
                         enemies[i].bounds.x,
                         enemies[i].bounds.y,
-                        ((enemies[i].frame + game.frameCount) % 20 < 10)? enemies[i].bitmap1 : enemies[i].bitmap2
+                        ((enemies[i].frame + game.frameCount) % 20 < 10) ? enemies[i].bitmap1 : enemies[i].bitmap2
                     );
                 }
             }
