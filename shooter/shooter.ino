@@ -9,7 +9,7 @@
 
 #define MAX_SHOTS 5
 #define MAX_BULLETS 5
-#define MAX_ENEMIES 16
+#define MAX_ENEMIES 10
 #define MAX_LEVEL 2
 
 #define STATE_INACTIVE 0
@@ -28,6 +28,7 @@
 
 struct Sprite {
     Rect bounds = Rect(0, 0, 1, 1);
+    Point speed = Point(-1, 0);
     byte state = STATE_INACTIVE;
     byte type = TYPE_ENEMY;
     byte frame = 0;
@@ -366,7 +367,21 @@ void loop() {
 
                     // If enemy is out of screen bounds, inactivate it
                     if (enemies[i].bounds.x > 0) {
-                        enemies[i].bounds.x--;
+                        // TODO different types of moving
+                        //enemies[i].bounds.x--;
+
+                        if (enemies[i].id == 1) {
+                            enemies[i].speed.y = sin(timeElapsed) /2.5;
+                        }
+
+                        enemies[i].bounds.x += enemies[i].speed.x;
+                        enemies[i].bounds.y += enemies[i].speed.y;
+
+                        if (enemies[i].bounds.y < 0) {
+                            enemies[i].bounds.y = 0;
+                        } else if (enemies[i].bounds.y +enemies[i].bounds.height >= game.height) {
+                            enemies[i].bounds.y = game.height -enemies[i].bounds.height -1;
+                        }
                     } else {
                         enemies[i].state = STATE_INACTIVE;
                     }
