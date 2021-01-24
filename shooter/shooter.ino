@@ -374,7 +374,7 @@ void loop() {
                     // Check if enemy is exploding and should be removed
                     if (enemies[i].ttl > 0 && game.frameCount == 0) {
                         enemies[i].ttl--;
-                        if (enemies[i].ttl == 0) {
+                        if (enemies[i].ttl == 0 && enemies[i].hitPoints == 0) {
                             enemies[i].state = STATE_INACTIVE;
                         }
                     }
@@ -433,7 +433,10 @@ void loop() {
                     for (k = 0; k < MAX_SHOTS; k++) {
                         if (shots[k].state != STATE_INACTIVE) {
                             if (game.collide(shots[k].position, enemies[i].bounds)) {
-                                
+                                /* 
+                                 *  Shot collides with enemy, decrease enemies life points
+                                 *  and deactivate shot.
+                                 */
                                 shots[k].state = STATE_INACTIVE;
                                 enemies[i].hitPoints--;
 
@@ -444,13 +447,18 @@ void loop() {
                                     enemies[i].bitmap1 = gfxExplosion1;
                                     enemies[i].bitmap2 = gfxExplosion2;
                                     
+                                    // Increase player points according to enemies type.
                                     switch (enemies[i].id) {
                                         case 1: playerScore += 10; break;
                                         case 2: playerScore += 30; break;
                                         case 3: playerScore += 50; break;
                                     }
                                     
-                                } else {
+                                }
+                                
+                                // Enemy hit but not killed
+                                else {                                    
+                                    enemies[i].ttl = 1;
                                     soundCollision();
                                 }
                             }
@@ -493,11 +501,13 @@ void loop() {
             // Enemies
             for (i = 0; i < MAX_ENEMIES; i++) {
                 if (enemies[i].state != STATE_INACTIVE) {
-                    game.drawBitmap(
-                        enemies[i].bounds.x,
-                        enemies[i].bounds.y,
-                        ((enemies[i].frame + game.frameCount) % 20 < 10) ? enemies[i].bitmap1 : enemies[i].bitmap2
-                    );
+                    if (enemies[i].ttl == 0 || game.everyXFrames(2)) {
+                        game.drawBitmap(
+                            enemies[i].bounds.x,
+                            enemies[i].bounds.y,
+                            ((enemies[i].frame + game.frameCount) % 20 < 10) ? enemies[i].bitmap1 : enemies[i].bitmap2
+                        );
+                    }
                 }
             }
 
