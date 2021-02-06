@@ -9,7 +9,7 @@
 
 #define MAX_SHOTS 5
 #define MAX_BULLETS 5
-#define MAX_ENEMIES 10
+#define MAX_ENEMIES 15
 #define MAX_LEVEL 2
 
 #define STATE_INACTIVE 0
@@ -28,7 +28,6 @@
 
 struct Sprite {
     Rect bounds = Rect(0, 0, 1, 1);
-    Point speed = Point(-1, 0);
     byte state = STATE_INACTIVE;
     byte type = TYPE_ENEMY;
     byte frame = 0;
@@ -66,6 +65,7 @@ uint8_t levelCursor = 0;
 uint8_t levelEntries = 0;
 uint16_t playerScore = 0;
 uint8_t playerLives = 0;
+Point speed = Point(0, 0);
 
 void setup() {
     game = ArduGame_TvOut(128, 64);
@@ -212,6 +212,22 @@ void newEnemy(uint8_t enemyType = 0, float y = 0) {
         enemies[idx].id = enemyType;
 
         switch (enemyType) {
+            case 5:
+                enemies[idx].hitPoints = 1;
+                enemies[idx].bitmap1 = gfxEnemy05b;
+                enemies[idx].bitmap2 = gfxEnemy05a;
+                enemies[idx].bounds.width = 6;
+                enemies[idx].bounds.height = 6;
+                break;
+
+            case 4:
+                enemies[idx].hitPoints = 1;
+                enemies[idx].bitmap1 = gfxEnemy04a;
+                enemies[idx].bitmap2 = gfxEnemy04b;
+                enemies[idx].bounds.width = 6;
+                enemies[idx].bounds.height = 6;
+                break;
+
             case 3:
                 enemies[idx].hitPoints = 4;
                 enemies[idx].bitmap1 = gfxEnemy03a;
@@ -367,15 +383,16 @@ void loop() {
 
                     // If enemy is out of screen bounds, inactivate it
                     if (enemies[i].bounds.x > 0) {
-                        // TODO different types of moving
-                        //enemies[i].bounds.x--;
+                        speed.x = -1;
 
                         if (enemies[i].id == 1) {
-                            enemies[i].speed.y = sin(timeElapsed) /2.5;
+                            speed.y = sin(timeElapsed) / 2.5;
+                        } else {
+                            speed.y = 0;
                         }
 
-                        enemies[i].bounds.x += enemies[i].speed.x;
-                        enemies[i].bounds.y += enemies[i].speed.y;
+                        enemies[i].bounds.x += speed.x;
+                        enemies[i].bounds.y += speed.y;
 
                         if (enemies[i].bounds.y < 0) {
                             enemies[i].bounds.y = 0;
@@ -397,7 +414,8 @@ void loop() {
 
                 // Let some enemies shoot bullets
                 if (game.frameCount == 0 && enemies[i].state != STATE_INACTIVE && enemies[i].ttl == 0) {
-                    if (enemies[i].id == 3) {
+                    if (enemies[i].id == 3 || enemies[i].id == 4 || enemies[i].id == 5) {
+
                         if (random(10) == 0) {
                             float lX = (enemies[i].bounds.x -enemies[i].bounds.width /2) - (player.bounds.x -player.bounds.width /2);
                             float lY = (enemies[i].bounds.y -enemies[i].bounds.height /2) - (player.bounds.y -player.bounds.height /2);
@@ -443,6 +461,7 @@ void loop() {
 
             // Collision detection
             for (i = 0; i < MAX_ENEMIES; i++) {
+
                 // Check if enemy is shot by player
                 if (enemies[i].state != STATE_INACTIVE && enemies[i].type != TYPE_FRIENDLY) {
                     for (k = 0; k < MAX_SHOTS; k++) {

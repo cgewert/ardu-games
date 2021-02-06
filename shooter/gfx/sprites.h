@@ -166,4 +166,47 @@ const unsigned char gfxEnemy03b[] PROGMEM = {
     0x2A  // ◻◻◼◻◼◻◼◻
 };
 
+const unsigned char gfxEnemy04a[] PROGMEM = {
+    6, 6,
+    0xFC, // ######..
+    0xE8, // ###.#...
+    0xA8, // #.#.#...
+    0x84, // #....#..
+    0x20, // ..#.....
+    0x10  // ...#....
+};
+
+
+const unsigned char gfxEnemy04b[] PROGMEM = {
+    6, 6,
+    0xFC, // ######..
+    0xBC, // #.####..
+    0xA8, // #.#.#...
+    0x84, // #....#..
+    0x08, // ....#...
+    0x10  // ...#....
+};
+
+const unsigned char gfxEnemy05a[] PROGMEM = {
+    6, 6,
+    0x10, // ...#....
+    0x08, // ....#...
+    0x84, // #....#..
+    0xA8, // #.#.#...
+    0xBC, // #.####..
+    0xFC  // ######..
+};
+
+const unsigned char gfxEnemy05b[] PROGMEM = {
+    6, 6,
+    0x20, // ..#.....
+    0x10, // ...#....
+    0x84, // #....#..
+    0x54, // .#.#.#..
+    0x5C, // .#.###..
+    0xFC  // ######..
+};
+
+
+
 #endif
